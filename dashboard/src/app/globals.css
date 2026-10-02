@@ -1,0 +1,481 @@
+/*
+  Design tokens.
+
+  Deliberately the Data Usage Tracker's system -- same true-black OLED ground,
+  same radii, easing and type scale -- so the two localhost dashboards read as
+  siblings rather than as two unrelated tools that happen to share a machine.
+
+  What differs is the accent. This dashboard is about two quantities, down and
+  up, and they are the same green and amber the meter already draws in the tray
+  icon and the flyout (src/Theme.cs). A reader should not have to learn a second
+  colour language moving from the taskbar to the browser.
+
+  Red stays reserved for genuine anomalies -- a gap in the recording, a dead
+  adapter. Never decoration.
+*/
+
+:root {
+  --bg: #000000;
+  --bg-panel: #0a0a0b;
+  --bg-panel-hover: #101012;
+  --bg-inset: #08080a;
+
+  --border: #1e1e22;
+  --border-strong: #2c2c33;
+
+  --text: #f5f5f7;
+  --text-dim: #a1a1aa;
+  --text-faint: #6b6b76;
+
+  /* Straight from the meter's dark palette. */
+  --down: #6ee7a8;
+  --down-dim: rgba(110, 231, 168, 0.14);
+  --up: #ffc46b;
+  --up-dim: rgba(255, 196, 107, 0.14);
+
+  /* Download is the primary quantity, so it doubles as the accent. */
+  --accent: #6ee7a8;
+  --accent-bright: #8df3bd;
+  --accent-glow: rgba(110, 231, 168, 0.32);
+
+  --danger: #ff4d4f;
+  --danger-dim: rgba(255, 77, 79, 0.14);
+
+  --radius: 14px;
+  --radius-sm: 9px;
+
+  --ease: cubic-bezier(0.22, 0.9, 0.3, 1);
+  --dur: 200ms;
+
+  --fs-hero: clamp(3.2rem, 7vw, 5.4rem);
+  --fs-stat: clamp(2.1rem, 3.6vw, 3rem);
+  --fs-h1: clamp(1.7rem, 2.6vw, 2.2rem);
+  --fs-h2: 1.3rem;
+  --fs-body: 1.0625rem;
+  --fs-small: 0.9375rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-geist-sans), 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Digits keep a fixed width everywhere, so nothing shivers during a count-up. */
+body, table, input, select, button { font-variant-numeric: tabular-nums; }
+
+.mono { font-family: var(--font-geist-mono), ui-monospace, monospace; }
+
+h1, h2, h3 { margin: 0; line-height: 1.2; letter-spacing: -0.02em; font-weight: 600; }
+h1 { font-size: var(--fs-h1); }
+h2 { font-size: var(--fs-h2); }
+
+a { color: var(--accent); text-decoration: none; transition: color var(--dur) var(--ease); }
+a:hover { color: var(--accent-bright); }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+/* ---------------------------------------------------------------- layout */
+
+.shell { min-height: 100vh; display: flex; flex-direction: column; }
+
+.topbar {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;
+  padding: 0.9rem clamp(1rem, 3vw, 2.5rem);
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Mark, wordmark and tabs all sit together on the left. The brand no longer
+   pushes the rest away; only sign-out is anchored right, because it is a
+   control rather than a label and should not read as part of the title. */
+.brand { display: flex; align-items: center; gap: 0.55rem; }
+.brand strong { font-weight: 620; letter-spacing: -0.02em; }
+.brand-mark { display: block; border-radius: 5px; flex: none; }
+
+/* The sign-out control, shown only when a password is set. */
+.topbar-end { margin-left: auto; display: flex; align-items: center; gap: 0.9rem; }
+
+.content { padding: clamp(1.4rem, 3vw, 2.5rem); max-width: 1400px; width: 100%; margin: 0 auto; }
+
+/* ----------------------------------------------------------------- cards */
+
+.card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.6rem;
+  /* Inset highlight does the lifting a shadow cannot on pure black. */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 12px 28px rgba(0, 0, 0, 0.55);
+  transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease),
+              box-shadow var(--dur) var(--ease);
+}
+.card--hover:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 18px 36px rgba(0, 0, 0, 0.6);
+}
+
+.card-title {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 1.2rem; margin-bottom: 1.15rem; flex-wrap: wrap;
+}
+
+.grid { display: grid; gap: 1.15rem; }
+.grid--2 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.grid--3 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.grid--4 { grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); }
+
+.stack { display: grid; gap: 1.15rem; }
+
+/* Grid items default to min-width: auto, so one wide child - the previous-runs
+   table, inside its own scrolling wrapper - set the minimum width of every
+   column up the tree. On a phone that made the page 767px wide and the browser
+   shrank the whole thing to fit. The wrapper scrolls the table instead. */
+.stack > *, .grid > * { min-width: 0; }
+
+/* ----------------------------------------------------------------- stats */
+
+.stat-label {
+  font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--text-faint);
+}
+.stat-value {
+  font-size: var(--fs-stat); font-weight: 650;
+  letter-spacing: -0.035em; line-height: 1.1; margin-top: 0.5rem;
+}
+.stat-value--down { color: var(--down); }
+.stat-value--up { color: var(--up); }
+.stat-unit {
+  font-size: 0.42em; font-weight: 600; color: var(--text-dim);
+  margin-left: 0.35rem; letter-spacing: 0;
+}
+/*
+  Label on the left, icon badge on the right. The badge is taller than the
+  label, so the value below is spaced from the row rather than from the text.
+*/
+.stat-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.stat-icon {
+  display: inline-grid; place-items: center; flex: none;
+  width: 32px; height: 32px; border-radius: var(--radius-sm);
+  color: var(--text-dim); background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+}
+.stat-icon--down { color: var(--down); background: var(--down-dim); border-color: transparent; }
+.stat-icon--up { color: var(--up); background: var(--up-dim); border-color: transparent; }
+.stat-head + .stat-value { margin-top: 0.35rem; }
+.stat-sub { color: var(--text-dim); font-size: var(--fs-small); margin-top: 0.4rem; }
+.stat-foot { margin-top: 0.25rem; font-size: 0.8125rem; color: var(--text-faint); }
+
+.legend { display: flex; gap: 1.1rem; align-items: center; font-size: var(--fs-small); color: var(--text-dim); }
+.legend span { display: inline-flex; align-items: center; gap: 0.45rem; }
+.swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+/* Under a chart, centred on it, rather than competing with the title's controls. */
+.legend--below { justify-content: center; margin-top: 0.9rem; }
+
+/* ---------------------------------------------------------------- select */
+
+/* Drawn to match the chips: same border, radius and type, with its own caret
+   so the native arrow does not differ between browsers. */
+.select {
+  appearance: none;
+  padding: 0.4rem 2rem 0.4rem 0.85rem; border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 0.8rem center;
+  color: var(--text); font-size: var(--fs-small); font-weight: 500;
+  font-family: inherit; cursor: pointer;
+  transition: border-color var(--dur) var(--ease), opacity 200ms var(--ease);
+}
+.select:hover { border-color: var(--text-faint); }
+.select:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.select option { background: var(--bg-panel); color: var(--text); }
+
+/* ----------------------------------------------------------------- chips */
+
+.chip {
+  padding: 0.4rem 0.85rem; border-radius: 999px;
+  border: 1px solid var(--border-strong); background: transparent;
+  color: var(--text-dim); font-size: var(--fs-small); font-weight: 500;
+  font-family: inherit; cursor: pointer;
+  transition: all var(--dur) var(--ease);
+}
+.chip:hover { color: var(--text); border-color: var(--text-faint); transform: translateY(-1px); }
+.chip[data-active='true'] {
+  color: #04120b; background: var(--accent); border-color: var(--accent);
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+/* ------------------------------------------------------------- speed test */
+
+/* The one button on the site that spends data, so it is the one control that
+   gets the filled accent treatment outside the option chips. */
+.chip--go {
+  color: #04120b; background: var(--accent); border-color: var(--accent);
+  font-weight: 600; padding: 0.5rem 1.2rem;
+}
+.chip--go:hover { color: #04120b; background: var(--accent-bright); border-color: var(--accent-bright); }
+.chip:disabled { opacity: 0.4; cursor: default; transform: none; }
+.chip[aria-disabled='true'] { opacity: 0.4; cursor: default; pointer-events: none; }
+
+.pager {
+  display: flex; align-items: center; justify-content: center; gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.gauge { display: grid; justify-items: center; gap: 0.4rem; }
+.gauge svg { width: 100%; max-width: 320px; height: auto; display: block; }
+
+/* Centred under the dial, and pushed to the bottom of the card so the button
+   sits on the same line as the settings card's last row rather than floating
+   wherever the gauge happens to end. */
+.gauge-actions {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.7rem; margin-top: 1.2rem;
+}
+
+.speed-chart { margin-top: 1rem; }
+.speed-chart--empty { border-bottom: 1px solid var(--border); }
+
+.meter {
+  height: 6px; border-radius: 999px; overflow: hidden;
+  background: var(--bg-inset); border: 1px solid var(--border);
+}
+.meter-fill {
+  height: 100%; background: var(--down);
+  transition: width 140ms linear;
+}
+.meter-fill--up { background: var(--up); }
+
+/* ------------------------------------------------------------------ note */
+
+/*
+  For the caveats that have to travel with a figure rather than sit in a footer:
+  that NIC-level volume is not the Data Usage Tracker's per-app volume, that a
+  peak is only ever the fastest thing that happened to run.
+*/
+.note {
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  padding: 0.85rem 1rem;
+  color: var(--text-dim);
+  font-size: var(--fs-small);
+}
+.note strong { color: var(--text); font-weight: 600; }
+
+.empty {
+  display: grid; place-items: center; gap: 0.6rem;
+  padding: 4rem 1rem; text-align: center;
+}
+.empty h2 { font-size: var(--fs-h1); }
+.empty p { margin: 0; color: var(--text-dim); max-width: 52ch; }
+.empty code {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.9em; color: var(--text); background: var(--bg-inset);
+  border: 1px solid var(--border); border-radius: 6px; padding: 0.1rem 0.4rem;
+}
+
+/* ------------------------------------------------------------------ tabs */
+
+/*
+  Three states that must all differ: resting, hovered, current.
+
+  They did not. Hover and active carried byte-identical declarations, so the bar
+  could not say which page you were on -- and both leaned on --bg-panel-hover,
+  which is 6% away from the black bar behind it and effectively invisible.
+
+  The accent marks what is selected; SHAPE says what kind of control it is. The
+  option chips already own the filled accent pill, so the current tab takes an
+  underline instead. A filled green pill for the page would read as one more
+  option to pick and blur navigating into filtering.
+*/
+
+.tabs { display: flex; gap: 0.1rem; align-items: center; }
+
+.tab {
+  position: relative;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: var(--fs-small);
+  font-weight: 550;
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+/* The underline is always present and simply transparent when resting, so the
+   label never shifts as it becomes current -- only the colour changes. */
+.tab::after {
+  content: '';
+  position: absolute;
+  left: 0.9rem;
+  right: 0.9rem;
+  bottom: 0.15rem;
+  height: 2px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background var(--dur) var(--ease);
+}
+
+.tab:hover { color: var(--text); background: var(--bg-panel-hover); }
+.tab:hover::after { background: var(--border-strong); }
+
+.tab[data-active='true'] { color: var(--accent-bright); background: transparent; }
+.tab[data-active='true']::after { background: var(--accent); }
+
+/* Hovering the page you are already on must not dim its own marker. */
+.tab[data-active='true']:hover { color: var(--accent-bright); background: var(--bg-panel-hover); }
+.tab[data-active='true']:hover::after { background: var(--accent); }
+
+/* Separates the tabs from the wordmark they now sit against, so they read as a
+   navigation group rather than as text trailing the title. */
+.tabs::before {
+  content: '';
+  align-self: stretch;
+  width: 1px;
+  margin-right: 0.6rem;
+  background: var(--border);
+}
+
+/* A button that has to sit in the same row as the tabs without pretending to be
+   one: it takes the tab's size and colour, but never the current-page
+   underline, because it does not name a page you can be on. */
+.tab--action {
+  border: 0; background: transparent; cursor: pointer;
+  font-family: inherit; font-size: var(--fs-small); font-weight: 550;
+}
+.tab--action::after { content: none; }
+
+/* ----------------------------------------------------------------- table */
+
+.table { width: 100%; border-collapse: collapse; font-size: var(--fs-small); }
+.table th {
+  text-align: left; font-weight: 600; color: var(--text-faint);
+  font-size: 0.8125rem; letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 0 0.6rem 0.6rem; border-bottom: 1px solid var(--border);
+}
+.table td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--border); }
+.table tr:last-child td { border-bottom: none; }
+.table .num { text-align: right; }
+
+code {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.9em; color: var(--text); background: var(--bg-inset);
+  border: 1px solid var(--border); border-radius: 6px; padding: 0.1rem 0.4rem;
+}
+
+/* ------------------------------------------------------------------ gate */
+
+/*
+  The sign-in screen.
+
+  Nothing of the dashboard's chrome: no tabs, no sign-out, no wordmark bar.
+  There is exactly one thing to do here, and offering navigation to pages that
+  will bounce straight back would only look broken. The card is the same panel
+  the rest of the site is built from, so the gate reads as this tool's own
+  rather than as something a proxy put in front of it.
+*/
+
+.gate {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.25rem;
+}
+
+.gate-card {
+  width: 100%;
+  max-width: 27rem;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.9rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 12px 28px rgba(0, 0, 0, 0.55);
+}
+
+.gate-brand {
+  display: flex; align-items: center; gap: 0.55rem;
+  color: var(--text-dim); font-weight: 620; letter-spacing: -0.02em;
+}
+
+.gate-title { font-size: var(--fs-h2); margin-top: 1.4rem; }
+.gate-sub { color: var(--text-dim); font-size: var(--fs-small); margin: 0.55rem 0 0; }
+
+.gate-command { margin: 0.7rem 0 0; }
+.gate-command code {
+  display: block; padding: 0.6rem 0.7rem; line-height: 1.5;
+  overflow-wrap: anywhere; color: var(--text-dim);
+}
+
+.gate-label {
+  margin-top: 1.5rem;
+  font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--text-faint);
+}
+
+.gate-input {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-body);
+  /* Dots, not digits: tabular-nums from the body rule makes a masked field
+     look like a counter. */
+  font-variant-numeric: normal;
+  transition: border-color var(--dur) var(--ease);
+}
+.gate-input:hover { border-color: var(--text-faint); }
+.gate-input:focus { border-color: var(--accent); }
+
+/* Red is reserved for genuine anomalies everywhere else on the site, and a
+   wrong password is one: it is the only signal on this page. */
+.gate-error {
+  margin: 0.85rem 0 0;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--danger-dim);
+  border-left: 2px solid var(--danger);
+  border-radius: var(--radius-sm);
+  background: var(--danger-dim);
+  color: var(--text);
+  font-size: var(--fs-small);
+  overflow-wrap: anywhere;
+}
+
+.gate-submit { margin-top: 1.3rem; align-self: flex-start; }
+
+.gate-foot {
+  margin: 1.5rem 0 0; padding-top: 1.1rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-faint); font-size: 0.8125rem; line-height: 1.6;
+}
+
+/* -------------------------------------------------------------- movement */
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.animate-in { animation: fadeUp 480ms var(--ease) both; }
+
+/* Motion here is decorative; nothing it conveys is lost when switched off. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,5 @@
+# cmd.exe mis-parses labels and GOTOs in an LF batch file, and build.cmd and
+# the dashboard launchers both use them. Pinned so every clone gets CRLF
+# whatever core.autocrlf says; git still stores them as LF.
+*.bat text eol=crlf
+*.cmd text eol=crlf

@@ -1,0 +1,33 @@
+{
+  "name": "internet-speed-meter-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local dashboard over the speed history recorded by Internet Speed Meter.",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1 -p 7845",
+    "dev:lan": "next dev -H 0.0.0.0 -p 7845",
+    "build": "next build",
+    "start": "next start -H 127.0.0.1 -p 7845",
+    "start:lan": "next start -H 0.0.0.0 -p 7845",
+    "firewall": "powershell -ExecutionPolicy Bypass -File ../scripts/firewall-private-only.ps1",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "geist": "^1.7.2",
+    "next": "^15.5.23",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "recharts": "^3.10.1",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "typescript": "^5.7.2"
+  }
+}

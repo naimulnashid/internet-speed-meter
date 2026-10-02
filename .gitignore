@@ -1,0 +1,29 @@
+# Build output
+bin/
+
+# Generated on first build by tools/make-icon.ps1
+assets/app.ico
+
+# Development preview renders
+icon-preview.png
+flyout-preview.png
+
+# Windows cruft
+Thumbs.db
+desktop.ini
+
+# Dashboard (optional; the exe never depends on it)
+dashboard/node_modules/
+dashboard/.next/
+dashboard/next-env.d.ts
+dashboard/tsconfig.tsbuildinfo
+
+# Dashboard site password. Plain text, so this must never be committed -- and
+# the patterns are deliberately wider than the one file that exists today,
+# because .env.production.local and a bare .env are read just as eagerly.
+dashboard/.env
+dashboard/.env.*
+!dashboard/.env.example
+
+# Dashboard service log
+logs/

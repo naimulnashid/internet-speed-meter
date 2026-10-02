@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"
+     role="img" aria-label="Internet Speed Meter">
+  <title>Internet Speed Meter</title>
+
+  <!--
+    A copy of assets/app.svg, which is the source of truth: the same 32 unit grid
+    as the generated .ico, with identical corner radius, gradient and arrow
+    geometry. Edit that one and bring the change here, so the browser tab, the
+    tray icon and the social card all stay the same mark.
+
+    It is duplicated rather than referenced because the Next.js app router
+    resolves this file by its location and name (src/app/icon.svg is the
+    convention that emits the icon link), and a symlink is not something to rely
+    on across a Windows checkout.
+
+    NO DOUBLE HYPHENS IN THIS COMMENT. An SVG is XML, where a double hyphen
+    inside a comment is a parse error, and a malformed icon still serves with a
+    200 and simply refuses to decode. That failure is invisible to anything that
+    only checks the status code.
+  -->
+
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#262834"/>
+      <stop offset="1" stop-color="#16171E"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="32" height="32" rx="7" ry="7" fill="url(#tile)"/>
+
+  <!-- Download: green, pointing down -->
+  <path fill="#6EE7A8" d="M5.5 4 H13.5 V17.5 H17 L9.5 28 L2 17.5 H5.5 Z"/>
+
+  <!-- Upload: amber, pointing up -->
+  <path fill="#FFC46B" d="M18.5 28 H26.5 V14.5 H30 L22.5 4 L15 14.5 H18.5 Z"/>
+</svg>
