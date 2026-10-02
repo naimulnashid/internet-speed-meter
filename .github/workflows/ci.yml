@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Read-only: nothing here publishes or writes back.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  meter:
+    name: Meter (build.cmd)
+    # The same .NET Framework 4 csc.exe that ships inside Windows, which is the
+    # whole point of build.cmd: no SDK is set up here, and none may be needed.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - shell: cmd
+        run: build.cmd
+
+  dashboard:
+    name: Dashboard (typecheck, build)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: dashboard/.nvmrc
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+      # Critical only, for now: Next 15 pins postcss 8.4.31, which carries
+      # high-severity advisories that only its build-time CSS processing can
+      # reach (this repo's own stylesheet). Raise to "high" once Next moves off it.
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=critical
+
+  powershell:
+    name: PowerShell scripts parse, and are pure ASCII
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Windows PowerShell 5.1 specifically: it is what Task Scheduler runs,
+      # and it misreads a UTF-8 dash in a BOM-less script as a string delimiter.
+      - shell: powershell
+        run: |
+          $bad = 0
+          foreach ($f in Get-ChildItem scripts\*.ps1) {
+            $tokens = $null; $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$tokens, [ref]$errors)
+            if ($errors.Count) { Write-Host "$($f.Name): $($errors.Count) parse error(s)"; $bad++ }
+            if (@([IO.File]::ReadAllBytes($f.FullName) | Where-Object { $_ -gt 127 }).Count) {
+              Write-Host "$($f.Name): non-ASCII bytes"; $bad++
+            }
+          }
+          if ($bad) { exit 1 }
+          Write-Host "All scripts parse and are pure ASCII."

@@ -1,5 +1,8 @@
 # Internet Speed Meter
 
+[![CI](https://github.com/naimulnashid/internet-speed-meter/actions/workflows/ci.yml/badge.svg)](https://github.com/naimulnashid/internet-speed-meter/actions/workflows/ci.yml)
+[![MIT license](https://img.shields.io/github/license/naimulnashid/internet-speed-meter)](LICENSE)
+
 > **Superseded.** This C# meter and its web dashboard have been replaced by
 > [Internet Speed Meter (native)](https://github.com/naimulnashid/internet-speed-meter-native),
 > one native app that reads and carries on the same settings, history and speed
